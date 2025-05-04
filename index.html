@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eyes Tracker</title>
+  <title>Google</title>
   
   <!-- p5.js library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
@@ -13,10 +13,30 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      font-family: 'Product Sans', Arial, sans-serif;
+      font-family: 'Arial', sans-serif;
     }
+    
     canvas {
       display: block;
+    }
+    
+    /* Google's Product Sans font for the logo */
+    @font-face {
+      font-family: 'Product Sans';
+      src: url('https://fonts.gstatic.com/s/productsans/v5/HYvgU2fE2nRJvZ5JFAumwegdm0LZdjqr5-oayXSOefg.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+    }
+    
+    /* Make search buttons hover effect */
+    button:hover {
+      border: 1px solid #dadce0 !important;
+      box-shadow: 0 1px 1px rgba(0,0,0,.1) !important;
+    }
+    
+    /* Style for footer links hover */
+    a:hover {
+      text-decoration: underline !important;
     }
   </style>
   

@@ -2,8 +2,8 @@
 const BACKGROUND_COLOR = 255; // White background
 const EYE_COLOR = 255; // White eyes
 const PUPIL_COLOR = 0; // Black pupils
-const EYE_SIZE = 60; // Slightly larger eyes
-const PUPIL_SIZE = 28; // Pupil size
+const EYE_SIZE = 50; // Eye size for the "o"s in Google
+const PUPIL_SIZE = 24; // Pupil size
 const PUPIL_MAX_OFFSET = 12; // How far pupils can move
 const PRIMARY_COLOR = [66, 133, 244]; // Google Blue
 const SECONDARY_COLORS = [
@@ -12,24 +12,41 @@ const SECONDARY_COLORS = [
   [15, 157, 88]   // Google Green
 ];
 
+// Google Logo Colors
+const GOOGLE_COLORS = {
+  G: [66, 133, 244],  // Blue
+  o1: [219, 68, 55],  // Red
+  o2: [244, 180, 0],  // Yellow
+  g: [66, 133, 244],  // Blue
+  l: [15, 157, 88],   // Green
+  e: [219, 68, 55]    // Red
+};
+
 // Variables
-let eyeDistance = 120;
-let eyesY; // Will be set in setup
+let eyeDistance = 50; // Distance between eyes (the two "o"s) - reduced for better spacing
+let googleY; // Will be set in setup
 let searchInput;
 let searchButton;
+let googleLogoSize = 72; // Size of the Google logo letters
+let googleLogoSpacing = -5; // Slightly negative spacing for tighter letter placement
+let googleWidth; // Total width of the Google logo
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   colorMode(RGB);
   angleMode(DEGREES);
   
-  // Position eyes in center of page
-  eyesY = windowHeight / 2 - 50; // Slightly above center
+  // Calculate the total width of the Google logo - adjusted for better spacing
+  // "G" + "o" + "o" + "g" + "l" + "e"
+  googleWidth = googleLogoSize * 3.0 + eyeDistance + googleLogoSpacing * 5;
+  
+  // Position Google logo above center
+  googleY = windowHeight / 3.3; 
   
   // Create minimal search elements
   createSearchElements();
   
-  describe('Two eyes that follow cursor with minimalist search bar.');
+  describe('Interactive Google logo with eyes that follow cursor and a search bar.');
 }
 
 function draw() {
@@ -39,19 +56,42 @@ function draw() {
   // Google-like top border
   drawTopBorder();
   
-  // Draw eyes
-  drawEye(width/2 - eyeDistance/2, eyesY);
-  drawEye(width/2 + eyeDistance/2, eyesY);
+  // Draw Google logo with animated eyes
+  drawGoogleLogo();
 }
 
-function drawEye(x, y) {
+function drawGoogleLogo() {
+  // Calculate starting X position to center the logo
+  let startX = (width - googleWidth) / 2;
+  
+  // Drawing the "G"
+  drawGoogleLetter("G", startX, googleY, GOOGLE_COLORS.G);
+  
+  // First "o" as an eye
+  let firstOX = startX + googleLogoSize*0.9 + googleLogoSpacing;
+  drawEye(firstOX, googleY, GOOGLE_COLORS.o1);
+  
+  // Second "o" as an eye
+  let secondOX = firstOX + EYE_SIZE + eyeDistance/4;
+  drawEye(secondOX, googleY, GOOGLE_COLORS.o2);
+  
+  // Drawing "g" - moved slightly to avoid overlap with second eye
+  drawGoogleLetter("g", secondOX + EYE_SIZE/1.6 + googleLogoSize*.4 + googleLogoSpacing, googleY, GOOGLE_COLORS.g);
+  
+  // Drawing "l" - tighter spacing
+  drawGoogleLetter("l", secondOX + EYE_SIZE/1.6 + googleLogoSize*0.8 + googleLogoSpacing*1, googleY, GOOGLE_COLORS.l);
+  
+  // Drawing "e" - tighter spacing
+  drawGoogleLetter("e", secondOX + EYE_SIZE/1.6 + googleLogoSize*1.3 + googleLogoSpacing*1, googleY, GOOGLE_COLORS.e);
+}
+
+function drawEye(x, y, color) {
   push();
   translate(x, y);
   
-  // Eye white - with subtle shadow
-  noStroke();
-  fill(240);
-  ellipse(0, 0, EYE_SIZE + 4, EYE_SIZE + 4);
+  // Eye circle - using the Google color for the 'o'
+  stroke(color[0], color[1], color[2]);
+  strokeWeight(4);
   fill(EYE_COLOR);
   ellipse(0, 0, EYE_SIZE, EYE_SIZE);
   
@@ -60,12 +100,24 @@ function drawEye(x, y) {
   
   // Draw pupil
   fill(PUPIL_COLOR);
+  noStroke();
   ellipse(pupilOffset.x, pupilOffset.y, PUPIL_SIZE);
   
   // Add highlight for realism
   fill(255, 255, 255, 200);
   ellipse(pupilOffset.x - PUPIL_SIZE/5, pupilOffset.y - PUPIL_SIZE/5, PUPIL_SIZE/3);
   
+  pop();
+}
+
+function drawGoogleLetter(letter, x, y, color) {
+  push();
+  textSize(googleLogoSize);
+  textAlign(CENTER, CENTER);
+  textFont('Product Sans');
+  textStyle(BOLD);
+  fill(color[0], color[1], color[2]);
+  text(letter, x, y);
   pop();
 }
 
@@ -104,6 +156,7 @@ function createSearchElements() {
   searchContainer.style('width', '100%');
   searchContainer.style('height', '100%');
   searchContainer.style('display', 'flex');
+  searchContainer.style('flex-direction', 'column');
   searchContainer.style('align-items', 'center');
   searchContainer.style('justify-content', 'center');
   searchContainer.style('pointer-events', 'none'); // Let clicks pass through to canvas
@@ -120,21 +173,18 @@ function createSearchElements() {
   searchWrapper.style('box-shadow', '0 1px 6px rgba(32,33,36,0.28)');
   searchWrapper.style('width', '500px');
   searchWrapper.style('padding', '5px 15px');
-  searchWrapper.style('margin-top', '100px'); // Position below the eyes
+  searchWrapper.style('margin-top', '25px'); // Position closer to the Google logo
   searchWrapper.style('pointer-events', 'auto'); // Make the search bar clickable
   
-  // Create the Google 'G' logo at start of search bar
-  let googleG = createDiv();
-  googleG.parent(searchWrapper);
-  googleG.html(`
-    <div style="width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; background: white;">
-      <span style="font-family: 'Product Sans', Arial, sans-serif; font-size: 20px; font-weight: bold; color: rgb(66, 133, 244);">G</span>
-    </div>
-  `);
+  // Search icon at beginning of bar
+  let searchIcon = createDiv();
+  searchIcon.parent(searchWrapper);
+  searchIcon.html('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>');
+  searchIcon.style('margin-right', '10px');
   
   // Search input with Google-like styling
   searchInput = createInput('');
-  searchInput.attribute('placeholder', 'Search or type URL');
+  searchInput.attribute('placeholder', 'Search Google or type a URL');
   searchInput.parent(searchWrapper);
   searchInput.style('flex', '1');
   searchInput.style('padding', '10px 0');
@@ -142,28 +192,113 @@ function createSearchElements() {
   searchInput.style('font-size', '16px');
   searchInput.style('color', '#202124');
   searchInput.style('outline', 'none');
-  searchInput.style('font-family', "'Product Sans', Arial, sans-serif");
+  searchInput.style('font-family', "'Arial', sans-serif");
   
-  // Search button
-  searchButton = createButton('');
-  searchButton.parent(searchWrapper);
-  searchButton.style('background', 'transparent');
-  searchButton.style('color', `rgb(${PRIMARY_COLOR[0]}, ${PRIMARY_COLOR[1]}, ${PRIMARY_COLOR[2]})`);
-  searchButton.style('border', 'none');
-  searchButton.style('width', '24px');
-  searchButton.style('height', '24px');
-  searchButton.style('cursor', 'pointer');
-  searchButton.style('display', 'flex');
-  searchButton.style('align-items', 'center');
-  searchButton.style('justify-content', 'center');
-  searchButton.style('margin-left', '10px');
+  // Voice search icon
+  let voiceSearch = createDiv();
+  voiceSearch.parent(searchWrapper);
+  voiceSearch.html('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 15c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3z" fill="#4285f4"></path><path d="M17 12c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-2.08c3.39-.49 6-3.39 6-6.92h-2z" fill="#4285f4"></path></svg>');
+  voiceSearch.style('margin-left', '10px');
+  voiceSearch.style('cursor', 'pointer');
   
-  // Add magnifying glass icon with CSS
-  searchButton.html('<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>');
+  
+  
+  // Create search buttons container
+  let searchButtonsContainer = createDiv();
+  searchButtonsContainer.parent(searchContainer);
+  searchButtonsContainer.style('display', 'flex');
+  searchButtonsContainer.style('margin-top', '30px');
+  searchButtonsContainer.style('pointer-events', 'auto');
+  
+  // Google Search button
+  let googleSearchBtn = createButton('Google Search');
+  googleSearchBtn.parent(searchButtonsContainer);
+  googleSearchBtn.style('background-color', '#f8f9fa');
+  googleSearchBtn.style('border', 'none');
+  googleSearchBtn.style('border-radius', '4px');
+  googleSearchBtn.style('color', '#3c4043');
+  googleSearchBtn.style('font-family', "'Arial', sans-serif");
+  googleSearchBtn.style('font-size', '14px');
+  googleSearchBtn.style('margin', '0 6px');
+  googleSearchBtn.style('padding', '10px 16px');
+  googleSearchBtn.style('cursor', 'pointer');
+  
+  // I'm Feeling Lucky button
+  let luckyBtn = createButton("I'm Feeling Lucky");
+  luckyBtn.parent(searchButtonsContainer);
+  luckyBtn.style('background-color', '#f8f9fa');
+  luckyBtn.style('border', 'none');
+  luckyBtn.style('border-radius', '4px');
+  luckyBtn.style('color', '#3c4043');
+  luckyBtn.style('font-family', "'Arial', sans-serif");
+  luckyBtn.style('font-size', '14px');
+  luckyBtn.style('margin', '0 6px');
+  luckyBtn.style('padding', '10px 16px');
+  luckyBtn.style('cursor', 'pointer');
+  
+  // Footer
+  createFooter();
+}
+
+function createFooter() {
+  let footer = createDiv();
+  footer.position(0, windowHeight - 100);
+  footer.style('width', '100%');
+  footer.style('height', '100px');
+  footer.style('background-color', '#f2f2f2');
+  footer.style('display', 'flex');
+  footer.style('flex-direction', 'column');
+  footer.style('pointer-events', 'auto');
+  
+  // Top row with country
+  let countryRow = createDiv(' Bharat');
+  countryRow.parent(footer);
+  countryRow.style('padding', '15px 30px');
+  countryRow.style('border-bottom', '1px solid #dadce0');
+  countryRow.style('color', '#70757a');
+  countryRow.style('font-size', '14px');
+  
+  // Bottom row with links
+  let linksRow = createDiv();
+  linksRow.parent(footer);
+  linksRow.style('display', 'flex');
+  linksRow.style('justify-content', 'space-between');
+  linksRow.style('padding', '15px 30px');
+  
+  // Left links
+  let leftLinks = createDiv();
+  leftLinks.parent(linksRow);
+  leftLinks.style('display', 'flex');
+  
+  createFooterLink('About', leftLinks);
+  createFooterLink('Advertising', leftLinks);
+  createFooterLink('Business', leftLinks);
+  createFooterLink('How Search works', leftLinks);
+  
+  // Right links
+  let rightLinks = createDiv();
+  rightLinks.parent(linksRow);
+  rightLinks.style('display', 'flex');
+  
+  createFooterLink('Privacy', rightLinks);
+  createFooterLink('Terms', rightLinks);
+  createFooterLink('Settings', rightLinks);
+}
+
+function createFooterLink(text, parent) {
+  let link = createA('#', text);
+  link.parent(parent);
+  link.style('color', '#70757a');
+  link.style('font-size', '14px');
+  link.style('text-decoration', 'none');
+  link.style('padding', '0 15px');
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  // Update eyes Y position
-  eyesY = windowHeight / 2 - 50;
+  // Update Google logo Y position
+  googleY = windowHeight / 3;
+  
+  // Update footer position
+  select('footer').position(0, windowHeight - 100);
 }
